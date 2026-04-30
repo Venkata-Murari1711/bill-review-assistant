@@ -156,7 +156,14 @@ export default function BillTable({ bills }: { bills: Bill[] }) {
               {displayedBills.map((bill) => (
                 <tr key={bill.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 font-medium text-gray-900">
-                    {bill.vendor_name ?? <span className="text-gray-400">{bill.file_name}</span>}
+                    <div className="flex items-center gap-2">
+                      {bill.vendor_name ?? <span className="text-gray-400">{bill.file_name}</span>}
+                      {bill.suspicious_flag && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+                          ⚠ Suspicious
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">{formatAmount(bill.amount, bill.currency)}</td>
                   <td className="px-4 py-3">{formatDate(bill.due_date)}</td>
