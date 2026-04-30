@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Bill } from '@/lib/types';
 import BillTable from '@/components/BillTable';
+import BillTypeChart from '@/components/BillTypeChart';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +48,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
+      {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatCard label="Total Bills" value={counts.total} color="blue" />
         <StatCard label="Processing" value={counts.processing} color="yellow" />
@@ -54,6 +56,13 @@ export default async function DashboardPage() {
         <StatCard label="Needs Review" value={counts.review} color="purple" />
       </div>
 
+      {/* Bill type pie chart */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <h2 className="font-semibold text-gray-800 mb-4">Bills by Type</h2>
+        <BillTypeChart bills={bills} />
+      </div>
+
+      {/* Bills table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-800">All Bills</h2>
