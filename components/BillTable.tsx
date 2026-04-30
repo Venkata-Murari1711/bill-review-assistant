@@ -40,6 +40,8 @@ function DeleteButton({ billId }: { billId: string }) {
 }
 
 export default function BillTable({ bills }: { bills: Bill[] }) {
+  const [sortByVendor, setSortByVendor] = useState(false);
+
   if (bills.length === 0) {
     return (
       <div className="text-center py-16 text-gray-400">
@@ -49,12 +51,28 @@ export default function BillTable({ bills }: { bills: Bill[] }) {
     );
   }
 
+  const displayedBills = sortByVendor
+    ? [...bills].sort((a, b) => {
+        const nameA = (a.vendor_name ?? a.file_name ?? '').toLowerCase();
+        const nameB = (b.vendor_name ?? b.file_name ?? '').toLowerCase();
+        return nameA.localeCompare(nameB);
+      })
+    : bills;
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
         <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
           <tr>
-            <th className="px-4 py-3">Vendor</th>
+            <th className="px-4 py-3">
+              <button
+                onClick={() => setSortByVendor((v) => !v)}
+                className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+              >
+                Vendor
+                <span className={sortByVendor ? 'text-blue-500' : 'text-gray-300'}>↕</span>
+              </button>
+            </th>
             <th className="px-4 py-3">Amount</th>
             <th className="px-4 py-3">Due Date</th>
             <th className="px-4 py-3">Type</th>
@@ -64,7 +82,7 @@ export default function BillTable({ bills }: { bills: Bill[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {bills.map((bill) => (
+          {displayedBills.map((bill) => (
             <tr key={bill.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-4 py-3 font-medium text-gray-900">
                 {bill.vendor_name ?? <span className="text-gray-400">{bill.file_name}</span>}
