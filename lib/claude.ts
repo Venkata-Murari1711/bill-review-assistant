@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { BillExtraction, Recommendation } from './types';
+import { Bill, BillExtraction, Recommendation } from './types';
 
 function getClient() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -67,4 +67,56 @@ Explain clearly and concisely why this recommendation was made.`,
   });
 
   return response.choices[0].message.content?.trim() ?? 'No explanation available.';
+}
+
+function serializeBills(bills: Bill[]): string {
+  const ready = bills.filter((b) => b.status !== 'processing');
+  if (ready.length === 0) return 'No processed bills available.';
+  return ready
+    .map(
+      (b, i) =>
+        `Bill ${i + 1}:
+  Vendor: ${b.vendor_name ?? 'Unknown'}
+  Type: ${b.bill_type ?? 'Unknown'}
+  Amount: ${b.amount != null ? `${b.amount} ${b.currency ?? 'USD'}` : 'Unknown'}
+  Status: ${b.status}
+  Issue Date: ${b.issue_date ?? 'Unknown'}
+  Due Date: ${b.due_date ?? 'Unknown'}
+  Invoice #: ${b.invoice_number ?? 'Unknown'}
+  Recommendation: ${b.recommendation ?? 'None'}
+  Suspicious: ${b.suspicious_flag}
+  Duplicate: ${b.duplicate_flag}`
+    )
+    .join('\n\n');
+}
+
+export async function answerBillQuestion(
+  question: string,
+  bills: Bill[],
+  history: { role: 'user' | 'assistant'; content: string }[]
+): Promise<string> {
+  const today = new Date().toISOString().split('T')[0];
+  const billContext = serializeBills(bills);
+
+  const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+    {
+      role: 'system',
+      content: `You are a helpful financial assistant for a small business owner. Today's date is ${today}.
+Answer questions about the business's bills using the data provided. Be concise and specific.
+When calculating totals, show a brief breakdown. If data is missing or unclear, say so.
+
+Bill Data:
+${billContext}`,
+    },
+    ...history.map((m) => ({ role: m.role, content: m.content } as OpenAI.Chat.ChatCompletionMessageParam)),
+    { role: 'user', content: question },
+  ];
+
+  const response = await getClient().chat.completions.create({
+    model: 'gpt-4o-mini',
+    max_tokens: 512,
+    messages,
+  });
+
+  return response.choices[0].message.content?.trim() ?? 'I could not generate an answer.';
 }

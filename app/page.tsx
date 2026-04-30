@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Bill } from '@/lib/types';
 import BillTable from '@/components/BillTable';
 import BillTypeChart from '@/components/BillTypeChart';
+import QAChat from '@/components/QAChat';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,10 +57,13 @@ export default async function DashboardPage() {
         <StatCard label="Needs Review" value={counts.review} color="purple" />
       </div>
 
-      {/* Bill type pie chart */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <h2 className="font-semibold text-gray-800 mb-4">Bills by Type</h2>
-        <BillTypeChart bills={bills} />
+      {/* Bill type chart + Q&A side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h2 className="font-semibold text-gray-800 mb-4">Bills by Type</h2>
+          <BillTypeChart bills={bills} />
+        </div>
+        <QAChat />
       </div>
 
       {/* Bills table */}
